@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { IsDateString, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 
 export class RegisterDto {
  
@@ -25,4 +25,13 @@ export class RegisterDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
+
+  @ApiProperty({
+    description: 'Fecha de cumpleaños del usuario',
+    example: '1990-05-10',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString() // Para validar que sea una fecha válida en formato ISO
+  birthday?: string;
 }

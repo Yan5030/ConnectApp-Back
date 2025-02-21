@@ -35,6 +35,9 @@ export class User {
 
   @Column({ default: 'active' })
   status: string;  // Por ejemplo: active, deactivated, suspended
+  
+  @Column({ type: 'date', nullable: true })
+  birthday: string; 
 
 //   // Relaciones con publicaciones
 //   @OneToMany(() => Post, (post) => post.user)
