@@ -1,0 +1,52 @@
+// src/auth/auth.service.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
+import { RegisterDto} from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import * as bcrypt from 'bcrypt';
+import { SignJWT, jwtVerify } from 'jose';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  async register(registerDto: RegisterDto) {
+    const { name, email, password } = registerDto;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const user = this.userRepository.create({ name, email, password: hashedPassword });
+    await this.userRepository.save(user);
+    
+    return {
+      success: true,
+      message: 'User registered successfully',
+      user: { id: user.id, name: user.name, email: user.email },
+    };
+  }
+
+  async login(loginDto: LoginDto) {
+    const { email, password } = loginDto;
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new Error('Invalid credentials');
+    }
+    
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const token = await new SignJWT({ id: user.id, email: user.email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(secret);
+    
+    return {
+      success: true,
+      message: 'Login successful',
+      user: { id: user.id, name: user.name, email: user.email, token },
+    };
+  }
+}
