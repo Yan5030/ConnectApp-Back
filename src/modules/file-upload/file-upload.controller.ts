@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, HttpCode, Param, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileUploadService } from './file-upload.service';
-import { CreateFileUploadDto } from './dto/create-file-upload.dto';
-import { UpdateFileUploadDto } from './dto/update-file-upload.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-@Controller('file-upload')
+import { ApiTags } from '@nestjs/swagger';
+import { ImagesUploadPipe } from 'src/pipes/images-upload.pipe';
+
+@ApiTags("Files")
+@Controller('files')
 export class FileUploadController {
-  constructor(private readonly fileUploadService: FileUploadService) {}
+  constructor(
+    private readonly fileUploadService: FileUploadService
+  ) {}
 
-  @Post()
-  create(@Body() createFileUploadDto: CreateFileUploadDto) {
-    return this.fileUploadService.create(createFileUploadDto);
-  }
+  @Post("uploadImage/:userId")
+@UseInterceptors(FileInterceptor("file"))
+@HttpCode(200)
+async uploadImage(
+  @Param("userId") userId: string,  // ← Aquí lo capturas
+  @UploadedFile(new ImagesUploadPipe()) file: Express.Multer.File,
+  @Query("type") type: string, // Tipo de imagen (profile, cover, post, etc.)
+  @Query("postId") postId?: string,  // ← Opcional, si la imagen es de un post
+  
+) {
+  const folderMap = {
+    profile: "profile_pictures",
+    cover: "cover_pictures",
+    post: "post_images",
+  };
 
-  @Get()
-  findAll() {
-    return this.fileUploadService.findAll();
-  }
+  const folder = folderMap[type] || "others"; 
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fileUploadService.findOne(+id);
-  }
+  const img = await this.fileUploadService.uploadFile({
+    buffer: file.buffer,
+    fieldName: file.fieldname,
+    mimeType: file.mimetype,
+    originalName: `${folder}/${userId}-${file.originalname}`, // Ahora usa `userId`
+    size: file.size,
+  });
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFileUploadDto: UpdateFileUploadDto) {
-    return this.fileUploadService.update(+id, updateFileUploadDto);
-  }
+  return { img, userId, postId };
+}
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fileUploadService.remove(+id);
-  }
 }

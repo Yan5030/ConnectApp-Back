@@ -1,26 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFileUploadDto } from './dto/create-file-upload.dto';
-import { UpdateFileUploadDto } from './dto/update-file-upload.dto';
+import { CloudinaryService } from 'src/service/cloudinary/cloudinary.service';
+import { FileUploadDTO } from './dto/file-upload.dto';
 
 @Injectable()
 export class FileUploadService {
-  create(createFileUploadDto: CreateFileUploadDto) {
-    return 'This action adds a new fileUpload';
-  }
+constructor(private readonly cloudinaryService: CloudinaryService){}
 
-  findAll() {
-    return `This action returns all fileUpload`;
-  }
+    async uploadFile( file:FileUploadDTO ) :Promise<string> {
+        const url = await this.cloudinaryService.uploadFile(file.buffer,file.originalName);
+        return url;
+        }
 
-  findOne(id: number) {
-    return `This action returns a #${id} fileUpload`;
-  }
-
-  update(id: number, updateFileUploadDto: UpdateFileUploadDto) {
-    return `This action updates a #${id} fileUpload`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} fileUpload`;
-  }
+        async getUrl(publicId:string){
+            return this.cloudinaryService.getUrl(publicId);
+        }
 }
