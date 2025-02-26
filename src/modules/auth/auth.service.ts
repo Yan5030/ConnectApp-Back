@@ -1,5 +1,5 @@
 // src/auth/auth.service.ts
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
@@ -16,10 +16,16 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { name, email, password } = registerDto;
+    const { name, email, password, birthday } = registerDto;
+    
+    const existingUser = await this.userRepository.findOne({where: {email} })
+      if (existingUser) {
+        throw new BadRequestException ('Email is already in use')
+      }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const user = this.userRepository.create({ name, email, password: hashedPassword });
+    const user = this.userRepository.create({ name, email, password: hashedPassword,birthday });
     await this.userRepository.save(user);
     
     return {

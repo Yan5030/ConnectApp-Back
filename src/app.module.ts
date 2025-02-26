@@ -19,8 +19,8 @@ import { join } from 'path';
       isGlobal: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'src', 'assets'), // Servir archivos de /src/assets
-      serveRoot: '/assets', // URL base para acceder a los archivos
+      rootPath: join(__dirname, '..', 'src', 'assets'), 
+      serveRoot: '/assets', 
     }),
     AuthModule,
     UsersModule,
