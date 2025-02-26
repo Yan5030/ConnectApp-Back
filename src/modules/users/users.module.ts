@@ -7,6 +7,7 @@ import { Friendship } from '../friendship/entities/friendship.entity';
 
 @Module({
   imports: [ TypeOrmModule.forFeature([User, Friendship])],
+
   controllers: [UsersController],
   providers: [UsersService],
 })

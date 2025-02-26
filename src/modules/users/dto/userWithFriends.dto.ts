@@ -24,4 +24,7 @@ export class UserWithFriendsDto {
 
   @ApiProperty({ description: 'Total number of friends the user has' })
   friends: number;
+
+  @ApiProperty({ description: 'User birthday' })
+  birthday: string;
 }
