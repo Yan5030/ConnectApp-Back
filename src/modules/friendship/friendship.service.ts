@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Friendship } from './entities/friendship.entity';
 import { User } from '../users/entities/user.entity';
 import { FriendshipStatus } from '../../enum/friendShipStatus.enum'
+import { FriendResponseDto } from './dto/friendResponse.dto';
 
 @Injectable()
 export class FriendshipService {
@@ -15,24 +16,51 @@ export class FriendshipService {
   ) {}
 
   // Obtener amigos de un usuario: solo amigos con estado 'ACCEPTED'
-  async getFriends(userId: string): Promise<User[]> {
+  async getFriends(userId: string): Promise<FriendResponseDto[]> {
+    try {
+      // Buscar el usuario y cargar la relación de amigos
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['friends'], // Cargar la relación de amigos
+      });
+  
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+  
+      // Verificar si el usuario tiene amigos
+      if (!user.friends || user.friends.length === 0) {
+        throw new NotFoundException('This user has no friends');
+      }
+  
+      return user.friends.map (friend => new FriendResponseDto(friend.id, friend.name,friend.profilePicture)); // Retornar la lista de amigos
+    } catch (error) {
+      throw new InternalServerErrorException(
+        error.message || 'An error occurred while retrieving friends'
+      );
+    }
+  }
+  
+
+  async getFriendRequests(userId: string): Promise<Friendship[]> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['sentFriendRequests', 'receivedFriendRequests'],
     });
-
+  
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    // Filtrar amigos con estado 'ACCEPTED'
-    const friends = [
-      ...user.sentFriendRequests.filter((f) => f.status === FriendshipStatus.ACCEPTED).map((f) => f.receiver),
-      ...user.receivedFriendRequests.filter((f) => f.status === FriendshipStatus.ACCEPTED).map((f) => f.requester),
+  
+    // Unir las solicitudes enviadas y recibidas
+    const requests = [
+      ...user.sentFriendRequests,
+      ...user.receivedFriendRequests,
     ];
-
-    return friends;
+  
+    return requests; // Devuelve las solicitudes de amistad
   }
+  
 
   // Enviar solicitud de amistad
   async sendFriendRequest(fromUserId: string, toUserId: string) {
@@ -64,38 +92,59 @@ export class FriendshipService {
     });
 
     // Guardamos la solicitud de amistad
-    await this.friendshipRepository.save(friendship);
+    const savedFriendship = await this.friendshipRepository.save(friendship);
     return {
       success: true,
       message: 'Friend request sent successfully',
+      friendshipId: savedFriendship.id,
     };
   }
 
-  async updateFriendRequestStatus(
-    requesterId: string,
-    receiverId: string,
-    status: 'accepted' | 'denied',
-  ) {
-    const friendship = await this.friendshipRepository.findOne({
-      where: [
-        { requester: { id: requesterId }, receiver: { id: receiverId } },
-        { requester: { id: receiverId }, receiver: { id: requesterId } },
-      ],
+  
+  async updateFriendRequestStatus(requestId: string, status: FriendshipStatus): Promise<{message:string}> {
+    // Buscar la solicitud de amistad por ID
+    const request = await this.friendshipRepository.findOne({
+      where: { id: requestId },
+      relations: ['requester', 'receiver'],  // Asegúrate de cargar las relaciones con los usuarios
     });
 
-    if (!friendship) {
-      throw new NotFoundException('Friend request not found.');
+    if (!request) {
+      throw new NotFoundException('Friend request not found');
     }
 
-    // Actualizar el estado de la solicitud de amistad
-    if (status === 'accepted') {
-      friendship.status = FriendshipStatus.ACCEPTED;
-    } else if (status === 'denied') {
-      friendship.status = FriendshipStatus.DENIED;
-    } else {
-      throw new Error('Invalid status value.');
+    if (![FriendshipStatus.ACCEPTED, FriendshipStatus.DENIED].includes(status)) {
+      throw new BadRequestException({ message: 'Status must be either "accepted" or "denied".' });
     }
 
-    return await this.friendshipRepository.save(friendship);
+    // Actualizar el estado de la solicitud
+    request.status = status;
+    await this.friendshipRepository.save(request);
+
+    let responseMessage = `Friend request ${status.toLowerCase()} successfully.`;
+
+    // Si el estado es 'ACCEPTED', agregar a ambos usuarios a la lista de amigos
+    if (status === FriendshipStatus.ACCEPTED) {
+      const requester = request.requester;
+      const receiver = request.receiver;
+
+      // Si no existe la relación de amigos en la propiedad 'friends', agregarla
+      if (!requester.friends) {
+        requester.friends = [];
+      }
+      if (!receiver.friends) {
+        receiver.friends = [];
+      }
+
+      // Añadir ambos usuarios a las listas de amigos
+      requester.friends.push(receiver);
+      receiver.friends.push(requester);
+
+      // Guardar los usuarios con su nueva relación de amistad
+      await this.userRepository.save(requester);
+      await this.userRepository.save(receiver);
+
+      responseMessage = 'Friend request accepted successfully.';
+    }
+    return { message: responseMessage };
   }
 }

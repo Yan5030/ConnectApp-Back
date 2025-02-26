@@ -4,8 +4,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserWithFriendsDto } from './dto/userWithFriends.dto';
 import { Friendship } from '../friendship/entities/friendship.entity';
-import { join } from 'path';
-import * as fs from 'fs';
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class UsersService {
@@ -19,23 +18,23 @@ export class UsersService {
 
   // Buscar usuario por ID
   async findUserById(id: string): Promise<UserWithFriendsDto> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({ where: { id }, 
+      relations: ['sentFriendRequests', 'receivedFriendRequests']
+     });
 
     if (!user) throw new NotFoundException('User not found');
-
-    const defaultProfilePicture = '/assets/images/profile-default.jpg';
-    const defaultCoverPicture = '/assets/images/cover-default.jpg';
 
     return {
       id: user.id,
       name: user.name,
       email: user.email,
-      bio: user.bio || 'Hello, I am using this platform!',
-      location: user.location || 'Fill your information',
-      profilePicture: user.profilePicture || defaultProfilePicture,
-      coverPicture: user.coverPicture || defaultCoverPicture,
-      friends: 0, 
-      birthday: user.birthday || 'Fill your information',
+      bio: user.bio,
+      location: user.location,
+      profilePicture: user.profilePicture,
+      coverPicture: user.coverPicture,
+      friends: user.friendsCount, 
+      birthday: user.birthday,
+      status: user.status,
     };
   }
   // Obtener todos los usuarios
@@ -49,7 +48,12 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    Object.assign(user, updateUserDto); // Actualiza solo los campos enviados
+    if (updateUserDto.password) {
+      const saltRounds = 10;
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
+    }
+  
+    Object.assign(user, updateUserDto);
     await this.usersRepository.save(user);
 
     return {

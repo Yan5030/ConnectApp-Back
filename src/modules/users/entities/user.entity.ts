@@ -23,16 +23,16 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: '/assets/images/profile-default.jpg'})
   profilePicture: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: '/assets/images/cover-default.jpg' })
   coverPicture: string;
 
   @Column({ default: 'Hello, I am using this platform!' })
   bio: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: 'Fill your information'  })
   location: string;
 
   @Column({ default: 'active' })
@@ -65,6 +65,10 @@ export class User {
   @OneToMany(() => Friendship, (friendship) => friendship.receiver)
   receivedFriendRequests: Friendship[];
   
+  @ManyToMany(() => User)
+  @JoinTable()
+  friends: User[];
+
   get friendsCount(): number {
     return (this.sentFriendRequests?.length || 0) + (this.receivedFriendRequests?.length || 0);
   }
