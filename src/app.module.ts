@@ -10,6 +10,7 @@ import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { FriendshipModule } from './modules/friendship/friendship.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { PostsModule } from './modules/posts/posts.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { join } from 'path';
     AuthModule,
     UsersModule,
     FileUploadModule,
-    FriendshipModule
+    FriendshipModule,
+    PostsModule
   ],
   controllers: [AppController],
   providers: [AppService],

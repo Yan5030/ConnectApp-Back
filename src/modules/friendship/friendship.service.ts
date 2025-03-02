@@ -17,29 +17,22 @@ export class FriendshipService {
 
   // Obtener amigos de un usuario: solo amigos con estado 'ACCEPTED'
   async getFriends(userId: string): Promise<FriendResponseDto[]> {
-    try {
-      // Buscar el usuario y cargar la relación de amigos
-      const user = await this.userRepository.findOne({
-        where: { id: userId },
-        relations: ['friends'], // Cargar la relación de amigos
-      });
+    
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['friends'],
+    });
   
-      if (!user) {
-        throw new NotFoundException('User not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
       }
   
-      // Verificar si el usuario tiene amigos
-      if (!user.friends || user.friends.length === 0) {
-        throw new NotFoundException('This user has no friends');
+    if (!user.friends || user.friends.length === 0) {
+      throw new NotFoundException('This user has no friends');
       }
-  
-      return user.friends.map (friend => new FriendResponseDto(friend.id, friend.name,friend.profilePicture)); // Retornar la lista de amigos
-    } catch (error) {
-      throw new InternalServerErrorException(
-        error.message || 'An error occurred while retrieving friends'
-      );
+    return user.friends.map(friend => new FriendResponseDto(friend.id, friend.name, friend.profilePicture));
     }
-  }
+  
   
 
   async getFriendRequests(userId: string): Promise<Friendship[]> {

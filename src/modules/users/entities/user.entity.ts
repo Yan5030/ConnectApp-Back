@@ -1,9 +1,9 @@
 import { IsUUID } from 'class-validator';
 import { Friendship } from 'src/modules/friendship/entities/friendship.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
-// import { Post } from '../posts/post.entity';
-// import { Comment } from '../comments/comment.entity';
-// import { Reaction } from '../reactions/reaction.entity';
+import { Post } from '../../posts/entities/post.entity'
+import { Comment } from '../../comments/entities/comment.entity';
+import { Reaction } from "../../reactions/entities/reaction.entity"
 // import { Message } from '../messages/message.entity';
 // import { Notification } from '../notifications/notification.entity';
 // import { Report } from '../reports/report.entity';
@@ -41,22 +41,18 @@ export class User {
   @Column({ type: 'date', nullable: true })
   birthday: string; 
 
-//   // Relaciones con publicaciones
-//   @OneToMany(() => Post, (post) => post.user)
-//   posts: Post[];
+  // Relaciones con publicaciones
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 
-//   // Relaciones con comentarios
-//   @OneToMany(() => Comment, (comment) => comment.user)
-//   comments: Comment[];
+  // Relaciones con comentarios
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[];
 
-//   // Relaciones con reacciones
-//   @OneToMany(() => Reaction, (reaction) => reaction.user)
-//   reactions: Reaction[];
+  // Relaciones con reacciones
+  @OneToMany(() => Reaction, (reaction) => reaction.user)
+  reactions: Reaction[];
 
-//   // Relaciones con amigos
-//   @ManyToMany(() => User)
-//   @JoinTable()
-//   friends: User[];
 
   // Solicitudes de amistad
   @OneToMany(() => Friendship, (friendship) => friendship.requester)
