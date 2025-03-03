@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 import { PrivacyEnum } from 'src/enum/privacy.enum';
 
 export class ResponsePostDto {
@@ -7,14 +7,18 @@ export class ResponsePostDto {
   id: string;
 
   @ApiProperty({ example: 'Este es un post de ejemplo', required: false })
-  @Exclude()
+  @Expose()
+  @Transform(({ value }) => (value === null ? undefined : value))
   content?: string | null;
 
   @ApiProperty({ example: 'https://example.com/image.jpg', required: false })
-  @Exclude()
+  @Expose()
+  @Transform(({ value }) => (value === null ? undefined : value))
   image?: string | null;
 
   @ApiProperty({ example: 'https://example.com/video.mp4', required: false })
+  @Expose()
+  @Transform(({ value }) => (value === null ? undefined : value))
   video?: string | null ;
 
   @ApiProperty({ enum: PrivacyEnum, example: PrivacyEnum.PUBLIC })
