@@ -30,14 +30,22 @@ async create(@Body() createPostDto: CreatePostDto) {
  } 
 } 
 
-  @Get()
-  findAll() {
-    return this.postsService.findAll();
+  @Get('user/:userId')
+  @ApiOperation({summary: "Retrieve posts from a specific user"})
+  @ApiResponse({status: 200, description: 'Posts successfully retrieved'})
+  @ApiResponse({ status: 404, description: 'user not found || this user has no posts' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async  findAll(@Param('userId')userId: string ) {
+    return this.postsService.findAllUsersPosts(userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  @ApiOperation({summary: "Retrieve a specific post"})
+  @ApiResponse({status: 200, description: 'Post successfully retrieved'})
+  @ApiResponse({ status: 404, description: 'Post not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async findOne(@Param('id') id: string) {
+    return this.postsService.findOne(id);
   }
 
   @Patch(':id')
