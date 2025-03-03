@@ -113,11 +113,42 @@ export class PostsService {
     
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(id: string, updatePostDto: UpdatePostDto): Promise <ResponsePostDto> {
+   
+    const post = await this.postsRepository.findOne ({
+      where: {id},
+      relations: ['user'],
+    })
+
+    if (!post) {
+      throw new NotFoundException('Post not found')
+    }
+    Object.assign(post, updatePostDto);
+    await this.postsRepository.save(post);
+   
+    return {
+      id: post.id,
+      content: post.content ?? undefined,
+      image: post.image ?? undefined,
+      video: post.video ?? undefined,
+      privacy: post.privacy as PrivacyEnum,
+      createdAt: post.createdAt,
+      user: post.user.id
+     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: string): Promise<{ message: string }> {
+    const post = await this.postsRepository.findOne({
+      where: {id},
+      relations: ['user']
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found')
+    }
+
+    await this.postsRepository.remove(post)
+
+    return { message: `The post with ID ${id} was successfully deleted.` };
   }
 }

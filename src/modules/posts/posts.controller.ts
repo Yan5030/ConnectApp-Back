@@ -49,34 +49,20 @@ async create(@Body() createPostDto: CreatePostDto) {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
+  @ApiOperation({summary: "Update a specific post"})
+  @ApiResponse({status: 200, description: 'Post successfully updated'})
+  @ApiResponse({ status: 404, description: 'Post not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+    return this.postsService.update(id, updatePostDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(+id);
+  @ApiOperation({ summary: 'Delete a post' })
+  @ApiResponse({ status: 200, description: 'Post successfully deleted', schema: { example: { message: 'The post with ID 123e4567-e89b-12d3-a456-426614174000 was successfully deleted.' } } })
+  @ApiResponse({ status: 404, description: 'Post not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async remove(@Param('id') id: string) {
+    return this.postsService.remove(id);
   }
 }
-
-
-// @Get() // Método GET para obtener todos los recursos
-// findAll() {
-//   return this.nombreDelService.findAll();
-// }
-
-// @Get(':id') // Método GET para obtener un recurso por ID
-// findOne(@Param('id') id: string) {
-//   return this.nombreDelService.findOne(id);
-// }
-
-// @Put(':id') // Método PUT para actualizar un recurso
-// update(@Param('id') id: string, @Body() updateDto: UpdateDto) {
-//   return this.nombreDelService.update(id, updateDto);
-// }
-
-// @Delete(':id') // Método DELETE para eliminar un recurso
-// remove(@Param('id') id: string) {
-//   return this.nombreDelService.remove(id);
-// }
-// }
