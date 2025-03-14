@@ -9,8 +9,8 @@ async function bootstrap() {
 
   //swagger
   const config = new DocumentBuilder()
-  .setTitle('LinkUpp API')
-  .setDescription('API de la red social LinkUpp')
+  .setTitle('ConnectApp API')
+  .setDescription('API de la red social ConnectApp')
   .setVersion('1.0')
   .addBearerAuth()
   .build()

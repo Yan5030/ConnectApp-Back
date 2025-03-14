@@ -11,7 +11,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
   port: parseInt(process.env.DATABASE_PORT ?? "5432", 10),
   username: process.env.DATABASE_USER || 'postgres',
   password: String(process.env.DATABASE_PASSWORD).trim(),
-  database: process.env.DATABASE_NAME || 'LinkUpp',
+  database: process.env.DATABASE_NAME || 'ConnectApp',
   autoLoadEntities:true,
   entities: [__dirname + '/../**/*.entity.{js,ts}'], // entities : [ 'dist/**/*.entity{.ts,.js}' ]
   migrations: ['dist/migrations/*{.js,.ts}'],
