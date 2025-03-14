@@ -14,10 +14,10 @@ export class Comment {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE" })
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE",  eager: true })
   user: User;
 
-  @ManyToOne(() => Post, (post) => post.comments, { onDelete: "CASCADE" })
+  @ManyToOne(() => Post, (post) => post.comments, { onDelete: "CASCADE",  eager: true })
   post: Post;
 
   @OneToMany(()=> Reaction, (reaction) => reaction.comment, { onDelete: "CASCADE"})

@@ -11,6 +11,8 @@ import { FriendshipModule } from './modules/friendship/friendship.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { PostsModule } from './modules/posts/posts.module';
+import { CommentsModule } from './modules/comments/comments.module';
+import { ReactionsModule } from './modules/reactions/reactions.module';
 
 @Module({
   imports: [
@@ -27,7 +29,9 @@ import { PostsModule } from './modules/posts/posts.module';
     UsersModule,
     FileUploadModule,
     FriendshipModule,
-    PostsModule
+    PostsModule,
+    CommentsModule,
+    ReactionsModule
   ],
   controllers: [AppController],
   providers: [AppService],

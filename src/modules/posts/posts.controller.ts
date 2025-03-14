@@ -3,10 +3,15 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateCommentDto } from '../comments/dto/create-comment.dto';
+import { CommentsService } from '../comments/comments.service';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly commentsService: CommentsService
+  ){}
 
 @Post() 
 @ApiOperation({summary: "Publish a post"})
@@ -29,6 +34,7 @@ async create(@Body() createPostDto: CreatePostDto) {
     throw new InternalServerErrorException('Unexpected error occurred');
  } 
 } 
+
 
   @Get('user/:userId')
   @ApiOperation({summary: "Retrieve posts from a specific user"})

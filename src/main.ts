@@ -12,6 +12,7 @@ async function bootstrap() {
   .setTitle('LinkUpp API')
   .setDescription('API de la red social LinkUpp')
   .setVersion('1.0')
+  .addBearerAuth()
   .build()
 
   const document = SwaggerModule.createDocument (app, config);

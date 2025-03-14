@@ -2,14 +2,22 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentsService.create(createCommentDto);
+  @ApiOperation({summary: "Publish a comment"})
+  @ApiResponse({status: 201, description: 'Comment created successfully'})
+  @ApiResponse({ status: 400, description: 'Invalid request data' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  @ApiBody ({type: CreateCommentDto})
+  async createComment(
+    @Param('postId') postId: string,
+    @Body() createCommentDto: CreateCommentDto) {
+    return this.commentsService.create(postId, createCommentDto);
   }
 
   @Get()
