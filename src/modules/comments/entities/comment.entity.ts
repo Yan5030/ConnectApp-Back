@@ -11,6 +11,9 @@ export class Comment {
   @Column({ type: "text" })
   content: string;
 
+  @Column({ type: "text", nullable: true })
+  mediaUrl?: string;
+  
   @CreateDateColumn()
   createdAt: Date;
 
