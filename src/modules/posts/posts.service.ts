@@ -43,8 +43,6 @@ export class PostsService {
    
     try {
       const savedPost = await this.postsRepository.save(newPost);
-  
-      // Devolver el DTO de respuesta sin necesidad de forzar la conversión
       return {
         id: savedPost.id,
         content: savedPost.content ?? undefined,

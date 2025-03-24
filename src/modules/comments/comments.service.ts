@@ -7,6 +7,9 @@ import { User } from '../users/entities/user.entity';
 import { Post } from '../posts/entities/post.entity';
 import { Comment } from './entities/comment.entity';
 import { ResponseCommentDto } from './dto/response-comment.dto';
+import { ResponseCommentsListDto } from './dto/response-commentList.dto';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { CommentDto } from './dto/comment.dto';
 
 @Injectable()
 
@@ -27,14 +30,15 @@ export class CommentsService {
     }
 
     const post = await this.postsRepository.findOne({ where: { id: postId } });
+    console.log("Post encontrado: ", post);
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
     const comment = this.commentsRepository.create({
       ...createCommentDto,
-      post,
-      user,
+      post: post,
+      user: user
     });
 
     await this.commentsRepository.save(comment);
@@ -53,7 +57,52 @@ export class CommentsService {
     };
       return response;
   }
-   
+
+  async findAll(userId: string): Promise<ResponseCommentsListDto> {
+    const allMyComments = await this.commentsRepository.find({
+      where: { user: { id: userId } }, 
+    relations: ["user"],
+    });
+  
+    return {
+      success: true,
+      message: 'Comentarios obtenidos correctamente',
+      comments:
+       allMyComments.map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        ...(comment.mediaUrl && { mediaUrl: comment.mediaUrl }),
+        createdAt: comment.createdAt.toISOString(),
+        postId: comment.post.id,
+        userId: comment.user.id,
+      })),
+    };
+  }
+
+  async findCommentsByPostId(postId: string): Promise<ResponseCommentsListDto> {
+    const comments = await this.commentsRepository.find({
+      where: { post: { id: postId } },
+      relations: ['user', 'post'],
+    });
+  
+    if (comments.length === 0) {
+      throw new NotFoundException('No comments found for this post');
+    }
+  
+    return {
+      success: true,
+      message: 'Comments retrieved successfully',
+      comments: comments.map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        mediaUrl: comment.mediaUrl ?? '',
+        createdAt: comment.createdAt.toISOString(),
+        postId: comment.post.id,
+        userId: comment.user.id,
+      })),
+    };
+  }
+
   async update (
     id:string, 
     userId: string, 
